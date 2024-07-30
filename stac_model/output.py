@@ -6,29 +6,10 @@ from pystac.extensions.classification import Classification
 from stac_model.base import DataType, MLMBaseModel, ModelTask, OmitIfNone, ProcessingExpression
 
 
-class ModelResult(MLMBaseModel):
+class ResultStructure(MLMBaseModel):
     shape: List[Union[int, float]] = Field(..., min_items=1)
     dim_order: List[str] = Field(..., min_items=1)
     data_type: DataType
-
-
-# MLMClassification: TypeAlias = Annotated[
-#     Classification,
-#     PlainSerializer(
-#         lambda x: x.to_dict(),
-#         when_used="json",
-#         return_type=TypedDict(
-#             "Classification",
-#             {
-#                 "value": int,
-#                 "name": str,
-#                 "description": NotRequired[str],
-#                 "color_hint": NotRequired[str],
-#             }
-#         )
-#     )
-# ]
-
 
 class MLMClassification(MLMBaseModel, Classification):
     @model_serializer()
@@ -66,20 +47,10 @@ class MLMClassification(MLMBaseModel, Classification):
         arbitrary_types_allowed=True,
     )
 
-
-# class ClassObject(BaseModel):
-#     value: int
-#     name: str
-#     description: Optional[str] = None
-#     title: Optional[str] = None
-#     color_hint: Optional[str] = None
-#     nodata: Optional[bool] = False
-
-
 class ModelOutput(MLMBaseModel):
     name: str
     tasks: Set[ModelTask]
-    result: ModelResult
+    result: ResultStructure
 
     # NOTE:
     #   Although it is preferable to have 'Set' to avoid duplicate,
