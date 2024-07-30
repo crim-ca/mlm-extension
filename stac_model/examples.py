@@ -7,7 +7,7 @@ from pystac.extensions.file import FileExtension
 
 from stac_model.base import ProcessingExpression
 from stac_model.input import InputStructure, MLMStatistic, ModelInput
-from stac_model.output import MLMClassification, ModelOutput, ModelResult
+from stac_model.output import MLMClassification, ModelOutput, ResultStructure
 from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelProperties
 
 
@@ -82,7 +82,7 @@ def eurosat_resnet() -> ItemMLModelExtension:
             expression="torchgeo.datamodules.eurosat.EuroSATDataModule.collate_fn",
         ),  # noqa: E501
     )
-    result_struct = ModelResult(
+    result_struct = ResultStructure(
         shape=[-1, 10],
         dim_order=["batch", "class"],
         data_type="float32",
