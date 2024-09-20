@@ -5,10 +5,8 @@
   "description": "This object represents the metadata for a Machine Learning Model (MLM) used in STAC documents.",
   "oneOf": [
     {
-      "$comment": "This is the schema for STAC extension MLM in Items.",
       "allOf": [
         {
-          "$comment": "Schema to validate the MLM fields under Item properties or Assets properties.",
           "type": "object",
           "required": [
             "type",
@@ -51,13 +49,11 @@
           "$ref": "#/$defs/stac_extensions_mlm"
         },
         {
-          "$comment": "Schema to validate model role requirement.",
           "$ref": "#/$defs/AssetModelRoleMinimumOneDefinition"
         }
       ]
     },
     {
-      "$comment": "This is the schema for STAC extension MLM in Collections.",
       "allOf": [
         {
           "type": "object",
@@ -126,9 +122,7 @@
     },
     "stac_extensions_eo_bands": {
       "required": ["eo:bands"],
-      "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
       "properties": {
-        "$comment": "https://github.com/stac-extensions/eo#item-properties-or-asset-fields",
         "eo:bands": {
           "type": "array",
           "minItems": 1,
@@ -155,9 +149,7 @@
     },
     "stac_extensions_raster_bands": {
       "required": ["raster:bands"],
-      "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
       "properties": {
-        "$comment": "https://github.com/stac-extensions/raster#item-asset-fields",
         "raster:bands": {
           "type": "array",
           "minItems": 1,
@@ -168,7 +160,6 @@
       }
     },
     "stac_version_1.1": {
-      "$comment": "Requirement for STAC 1.1 or above.",
       "type": "object",
       "required": [
         "stac_version"
@@ -234,7 +225,6 @@
           "$ref": "#/$defs/mlm:hyperparameters"
         }
       },
-      "$comment": "Allow properties not defined by MLM prefix to allow combination with other extensions.",
       "patternProperties": {
         "^(?!dlm:)": {}
       },
@@ -259,7 +249,6 @@
       "title": "Name of the machine learning framework used.",
       "anyOf": [
         {
-          "$comment": "Add more entries here as needed, and repeat them in the README.",
           "description": "Notable predefined framework names.",
           "type": "string",
           "enum": [
@@ -325,15 +314,10 @@
     },
     "mlm:pretrained": {
       "type": "boolean",
-      "$comment": "If trained from scratch, the source should be explicitly 'null'. However, omitting the source if pretrained is allowed.",
       "if": {
-        "$comment": "This is the JSON-object 'properties' definition.",
         "properties": {
-          "$comment": "This is the STAC-Item 'properties' field.",
           "properties": {
-            "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
             "properties": {
-              "$comment": "Required MLM pretraining reference.",
               "mlm:pretrained": {
                 "const": false
               }
@@ -342,14 +326,10 @@
         }
       },
       "then": {
-        "$comment": "This is the JSON-object 'properties' definition.",
         "properties": {
-          "$comment": "This is the STAC-Item 'properties' field.",
           "properties": {
-            "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
             "required": ["mlm:pretrained_source"],
             "properties": {
-              "$comment": "Required MLM pretraining reference.",
               "mlm:pretrained_source": {
                 "const": null
               }
@@ -621,7 +601,6 @@
       ]
     },
     "ClassificationClasses": {
-      "$comment": "Must allow empty array for outputs that provide other predictions than classes.",
       "oneOf": [
         {
           "$ref": "https://stac-extensions.github.io/classification/v1.1.0/schema.json#/definitions/fields/properties/classification:classes"
@@ -633,7 +612,6 @@
       ]
     },
     "InputStatistics": {
-      "$comment": "MLM statistics for the specific input relevant for normalization for ML features.",
       "type": "array",
       "minItems": 1,
       "items": {
@@ -654,7 +632,6 @@
       "$ref": "https://stac-extensions.github.io/raster/v1.1.0/schema.json#/definitions/bands/items/properties/data_type"
     },
     "AssetModelRoleMinimumOneDefinition": {
-      "$comment": "At least one Asset must provide the model definition indicated by the 'mlm:model' role.",
       "required": [
         "assets"
       ],
@@ -714,7 +691,6 @@
       "description": "List of bands (if any) that compose the input. Band order represents the index position of the bands.",
       "allOf": [
         {
-          "$comment": "No 'minItems' here to support model inputs not using any band (other data source).",
           "type": "array",
           "items": {
             "oneOf": [
@@ -753,32 +729,26 @@
           }
         },
         {
-          "$comment": "However, if any band is indicated, a 'bands'-compliant section should describe them.",
           "$ref": "#/$defs/AnyBandsRef"
         }
       ]
     },
     "AnyBandsRef": {
-      "$comment": "This definition ensures that, if at least 1 named MLM input 'bands' is provided, at least 1 of the supported references from EO, Raster or STAC Core 1.1 are provided as well. Otherwise, 'bands' must be explicitly empty.",
       "if": {
         "type": "object",
         "properties": {
-          "$comment": "This is the STAC-Item 'properties' field.",
           "properties": {
             "type": "object",
             "required": [
               "mlm:input"
             ],
-            "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
             "properties": {
-              "$comment": "Required MLM bands listing referring to at least one band name.",
               "mlm:input": {
                 "type": "array",
                 "items": {
                   "required": [
                     "bands"
                   ],
-                  "$comment": "This is the 'Model Input Object' properties.",
                   "properties": {
                     "bands": {
                       "type": "array",
@@ -792,23 +762,17 @@
         }
       },
       "then": {
-        "$comment": "Need at least one 'bands' definition, but multiple are allowed.",
         "anyOf": [
           {
-            "$comment": "Bands described by raster extension.",
             "allOf": [
               {
                 "$ref": "#/$defs/stac_extensions_raster"
               },
               {
-                "$comment": "This is the JSON-object 'properties' definition.",
                 "properties": {
-                  "$comment": "This is the STAC-Item 'properties' field.",
                   "properties": {
                     "required": ["raster:bands"],
-                    "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
                     "properties": {
-                      "$comment": "https://github.com/stac-extensions/raster#item-asset-fields",
                       "raster:bands": {
                         "type": "array",
                         "minItems": 1,
@@ -823,25 +787,20 @@
             ]
           },
           {
-            "$comment": "Bands described by eo extension.",
             "allOf": [
               {
                 "$ref": "#/$defs/stac_extensions_eo"
               },
               {
-                "$comment": "EO extension expects at 'eo:bands' in (at least) 1 asset, and possibly in Item properties. Items are for summarizing. Since MLM also uses bands by 'name' reference, allow any combination, and let 'eo' validate remaining combinations.",
                 "anyOf": [
                   {
-                    "$comment": "This is the JSON-object 'properties' definition.",
                     "properties": {
-                      "$comment": "This is the STAC-Item 'properties' field.",
                       "properties": {
                         "$ref": "#/$defs/stac_extensions_eo_bands"
                       }
                     }
                   },
                   {
-                    "$comment": "For the case where 'eo:bands' is in the Asset of the model, it must also contain the 'mlm:model' role.",
                     "properties": {
                       "assets": {
                         "additionalProperties": {
@@ -860,22 +819,17 @@
             ]
           },
           {
-            "$comment": "Bands described by STAC Core 1.1.",
             "allOf": [
               {
                 "$ref": "#/$defs/stac_version_1.1"
               },
               {
-                "$comment": "This is the JSON-object 'properties' definition.",
                 "properties": {
-                  "$comment": "This is the STAC-Item 'properties' field.",
                   "properties": {
                     "required": [
                       "bands"
                     ],
-                    "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
                     "properties": {
-                      "$comment": "https://github.com/radiantearth/stac-spec/blob/bands/item-spec/common-metadata.md#bands",
                       "bands": {
                         "type": "array",
                         "minItems": 1,
@@ -892,29 +846,22 @@
         ]
       },
       "else": {
-        "$comment": "Case where no 'bands' are referenced in the MLM input. Counter-validate there are no 'eo:bands' or 'raster:bands' in the Model Asset.",
         "allOf": [
           {
-            "$comment": "This is the JSON-object 'properties' definition.",
             "properties": {
-              "$comment": "This is the STAC-Item 'properties' field.",
               "properties": {
                 "required": [
                   "mlm:input"
                 ],
-                "$comment": "This is the JSON-object 'properties' definition for the STAC Item 'properties' field.",
                 "properties": {
-                  "$comment": "Required MLM bands listing referring to at least one band name.",
                   "mlm:input": {
                     "type": "array",
                     "items": {
                       "required": [
                         "bands"
                       ],
-                      "$comment": "This is the 'Model Input Object' properties.",
                       "properties": {
                         "bands": {
-                          "$comment": "No bands reference provided, therefore none permitted in model inputs.",
                           "type": "array",
                           "maxItems": 0
                         }
