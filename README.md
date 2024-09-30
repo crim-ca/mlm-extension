@@ -1,5 +1,16 @@
 # Machine Learning Model Extension Specification
 
+> :warning: <br>
+> This repository is deprecated in favor of the new official community location
+> [stac-extensions/mlm](https://github.com/stac-extensions/mlm). <br>
+> The corresponding schemas are made available on
+> [https://stac-extensions.github.io/mlm/](https://stac-extensions.github.io/mlm/).
+>
+> This repository remains availabe as archive for STAC definitions that could still refer to
+> [https://crim-ca.github.io/mlm-extension/](https://crim-ca.github.io/mlm-extension/) schemas.
+> If you intend to employ STAC MLM for future work, it is **STRONGLY** recommended that you migrate to the
+> [stac-extensions/mlm](https://github.com/stac-extensions/mlm) schemas.
+
 [![hackmd-github-sync-badge](https://hackmd.io/N1cWyDM2S9eaAQtSvS0J_A/badge)](https://hackmd.io/N1cWyDM2S9eaAQtSvS0J_A?both)
 
 - **Title:** Machine Learning Model Extension
