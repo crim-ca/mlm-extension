@@ -29,6 +29,7 @@ from stac_model.input import ModelInput
 from stac_model.output import ModelOutput
 from stac_model.runtime import Runtime
 
+import torch.nn as nn
 T = TypeVar(
     "T",
     pystac.Collection,
@@ -160,6 +161,12 @@ class MLModelExtension(
         """Returns the extended summaries object for the given collection."""
         cls.ensure_has_extension(obj, add_if_missing)
         return SummariesMLModelExtension(obj)
+
+
+    @classmethod
+    def from_torch(cls, model: nn.Module, **kwargs) -> "ItemMLModelExtension":
+        from stac_model.utils import from_torch
+        return from_torch(model, **kwargs)
 
 
 class SummariesMLModelExtension(SummariesExtension):

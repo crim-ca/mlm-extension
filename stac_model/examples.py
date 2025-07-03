@@ -11,6 +11,7 @@ from stac_model.input import InputStructure, MLMStatistic, ModelInput
 from stac_model.output import MLMClassification, ModelOutput, ModelResult
 from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelProperties
 
+from torchgeo.models import unet, Unet_Weights
 
 def eurosat_resnet() -> ItemMLModelExtension:
     input_struct = InputStructure(
@@ -236,3 +237,12 @@ def eurosat_resnet() -> ItemMLModelExtension:
     item_mlm = MLModelExtension.ext(item, add_if_missing=True)
     item_mlm.apply(ml_model_meta.model_dump(by_alias=True, exclude_unset=True, exclude_defaults=True))
     return item_mlm
+
+def unet_mlm() -> ItemMLModelExtension:
+    """
+    Example of a UNet model using pytorchgeo SENTINEL2_2CLASS_NC_FTW default weights with Machine Learning Model Extension metadata.
+    """
+    weights = Unet_Weights.SENTINEL2_2CLASS_NC_FTW
+    model = unet(weights=weights)
+    item_ext = MLModelExtension.from_torch(model, weights=weights)
+    return item_ext
