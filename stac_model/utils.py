@@ -6,6 +6,7 @@ from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelPro
 import torch.nn as nn
 from typing import Optional
 
+
 def get_input_channels(model: nn.Module) -> int:
     """
     Get input channels from the first Conv2d layer in the model.
@@ -14,6 +15,7 @@ def get_input_channels(model: nn.Module) -> int:
         if isinstance(layer, nn.Conv2d):
             return layer.in_channels
     return 3  # default fallback
+
 
 def get_output_channels(model: nn.Module) -> int:
     """
@@ -26,23 +28,25 @@ def get_output_channels(model: nn.Module) -> int:
             return layer.out_channels
     return 10  # default fallback
 
+
 def from_torch(
     model: nn.Module,
     *,
-    weights: Optional[object] = None, 
+    weights: Optional[object] = None,
     item_id: str = "torch-model",
     bbox: Optional[list[float]] = None,
     geometry: Optional[dict] = None,
     links: Optional[list[dict]] = None,
-    datetime_range: tuple[str, str] = ("1900-01-01T00:00:00Z", "9999-01-01T00:00:00Z"), # training data timestamp range par default voir papier
+    datetime_range: tuple[str, str] = (
+        "1900-01-01T00:00:00Z",
+        "9999-01-01T00:00:00Z",
+    ),  # training data timestamp range par default voir papier
 ) -> ItemMLModelExtension:
-
     total_params = sum(p.numel() for p in model.parameters())
     arch = f"{model.__class__.__module__}.{model.__class__.__name__}"
     task = {"classification"}
 
     print("model passed:", vars(model))
-
     print(f"Modèle: {arch}, total params: {total_params}")
 
     if weights is not None and hasattr(weights, "meta"):
@@ -80,10 +84,14 @@ def from_torch(
         pre_processing_function=None,
     )
 
-    classes = getattr(model, "classes", [
-        MLMClassification(value=i, name=f"class_{i}", description=f"Auto-generated class {i}")
-        for i in range(output_shape[-1])
-    ])
+    classes = getattr(
+        model,
+        "classes",
+        [
+            MLMClassification(value=i, name=f"class_{i}", description=f"Auto-generated class {i}")
+            for i in range(output_shape[-1])
+        ],
+    )
     print("classes", classes)
 
     model_output = ModelOutput(
@@ -112,13 +120,15 @@ def from_torch(
     bbox = bbox or [-7.88, 37.13, 27.91, 58.21]
     geometry = geometry or {
         "type": "Polygon",
-        "coordinates": [[
-            [-7.88, 37.13],
-            [-7.88, 58.21],
-            [27.91, 58.21],
-            [27.91, 37.13],
-            [-7.88, 37.13],
-        ]]
+        "coordinates": [
+            [
+                [-7.88, 37.13],
+                [-7.88, 58.21],
+                [27.91, 58.21],
+                [27.91, 37.13],
+                [-7.88, 37.13],
+            ]
+        ],
     }
 
     item = Item(
@@ -134,7 +144,7 @@ def from_torch(
         stac_extensions=[MLModelExtension.get_schema_uri()],
     )
 
-    for link in (links or []):
+    for link in links or []:
         item.add_link(Link(**link))
 
     ext = MLModelExtension.ext(item, add_if_missing=True)

@@ -13,6 +13,7 @@ from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelPro
 
 from torchgeo.models import unet, Unet_Weights
 
+
 def eurosat_resnet() -> ItemMLModelExtension:
     input_struct = InputStructure(
         shape=[-1, 13, 64, 64],
@@ -237,6 +238,7 @@ def eurosat_resnet() -> ItemMLModelExtension:
     item_mlm = MLModelExtension.ext(item, add_if_missing=True)
     item_mlm.apply(ml_model_meta.model_dump(by_alias=True, exclude_unset=True, exclude_defaults=True))
     return item_mlm
+
 
 def unet_mlm() -> ItemMLModelExtension:
     """
