@@ -4,6 +4,7 @@ import torch.nn as nn
 from pystac import Asset, Item, Link
 from pystac.extensions.eo import Band, EOExtension
 
+from stac_model.base import TaskEnum
 from stac_model.input import InputStructure, ModelInput
 from stac_model.output import MLMClassification, ModelOutput, ModelResult
 from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelProperties
@@ -44,7 +45,7 @@ def from_torch(
 ) -> ItemMLModelExtension:
     total_params = sum(p.numel() for p in model.parameters())
     arch = f"{model.__class__.__module__}.{model.__class__.__name__}"
-    task = {"classification"}
+    task = {TaskEnum.CLASSIFICATION}
 
     # Extra metadata only found in weights of torchgeo models
     has_meta = weights is not None and hasattr(weights, "meta")
@@ -76,7 +77,6 @@ def from_torch(
         bands=bands,
         input=input_struct,
         resize_type=None,
-        value_scaling=None,
         pre_processing_function=None,
     )
 
