@@ -16,6 +16,7 @@ from typing import (
 )
 
 import pystac
+import torch.nn as nn
 from pydantic import ConfigDict, Field
 from pydantic.fields import FieldInfo
 from pystac.extensions.base import (
@@ -28,8 +29,6 @@ from stac_model.base import ModelTask, OmitIfNone
 from stac_model.input import ModelInput
 from stac_model.output import ModelOutput
 from stac_model.runtime import Runtime
-
-import torch.nn as nn
 
 T = TypeVar(
     "T",

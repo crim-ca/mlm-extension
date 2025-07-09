@@ -75,6 +75,10 @@
     {
       "href": "item_multi_io.json",
       "rel": "item"
+    },
+    {
+      "href": "torchgeo.json",
+      "rel": "item"
     }
   ]
 }

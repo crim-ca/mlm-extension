@@ -5,13 +5,12 @@ import shapely
 from dateutil.parser import parse as parse_dt
 from pystac.extensions.eo import Band, EOExtension
 from pystac.extensions.file import FileExtension
+from torchgeo.models import Unet_Weights, unet
 
 from stac_model.base import ProcessingExpression
 from stac_model.input import InputStructure, MLMStatistic, ModelInput
 from stac_model.output import MLMClassification, ModelOutput, ModelResult
 from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelProperties
-
-from torchgeo.models import unet, Unet_Weights
 
 
 def eurosat_resnet() -> ItemMLModelExtension:
@@ -242,7 +241,9 @@ def eurosat_resnet() -> ItemMLModelExtension:
 
 def unet_mlm() -> ItemMLModelExtension:
     """
-    Example of a UNet model using pytorchgeo SENTINEL2_2CLASS_NC_FTW default weights with Machine Learning Model Extension metadata.
+    Example of a UNet model using PyTorchGeo SENTINEL2_2CLASS_NC_FTW default weights.
+
+    Returns an ItemMLModelExtension with Machine Learning Model Extension metadata.
     """
     weights = Unet_Weights.SENTINEL2_2CLASS_NC_FTW
     model = unet(weights=weights)

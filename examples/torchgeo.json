@@ -113,6 +113,32 @@
       "type": "application/octet-stream; application=pytorch",
       "title": "U-Net (efficientnet-b3) weights trained on FTW dataset",
       "description": "A U-Net segmentation model with efficientnet-b3 encoder trained on FTW imagery with 2-class labels. Weights are non-commercial.",
+      "eo:bands": [
+        {
+          "name": "B4"
+        },
+        {
+          "name": "B3"
+        },
+        {
+          "name": "B2"
+        },
+        {
+          "name": "B8A"
+        },
+        {
+          "name": "B4"
+        },
+        {
+          "name": "B3"
+        },
+        {
+          "name": "B2"
+        },
+        {
+          "name": "B8A"
+        }
+      ],
       "roles": [
         "mlm:model",
         "mlm:weights",
@@ -147,6 +173,7 @@
     58.21
   ],
   "stac_extensions": [
-    "https://crim-ca.github.io/mlm-extension/v1.3.0/schema.json"
+    "https://crim-ca.github.io/mlm-extension/v1.3.0/schema.json",
+    "https://stac-extensions.github.io/eo/v1.1.0/schema.json"
   ]
 }

@@ -1,10 +1,12 @@
+from typing import Optional, cast
+
+import torch.nn as nn
 from pystac import Asset, Item, Link
+from pystac.extensions.eo import Band, EOExtension
+
 from stac_model.input import InputStructure, ModelInput
 from stac_model.output import MLMClassification, ModelOutput, ModelResult
 from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelProperties
-
-import torch.nn as nn
-from typing import Optional
 
 
 def get_input_channels(state_dict: dict) -> int:
@@ -131,7 +133,10 @@ def from_torch(
 
     # Model weights asset
     assets["model"] = Asset(
-        title=f"{meta.get('model', 'Model')} ({meta.get('encoder', '')}) weights trained on {meta.get('dataset', 'dataset')} dataset",
+        title=(
+            f"{meta.get('model', 'Model')} ({meta.get('encoder', '')}) weights "
+            f"trained on {meta.get('dataset', 'dataset')} dataset"
+        ),
         description=(
             f"A {meta.get('model', 'Model')} segmentation model with {meta.get('encoder', '')} encoder "
             f"trained on {meta.get('dataset', 'dataset')} imagery with {meta.get('num_classes', '?')}-class labels. "
@@ -194,4 +199,17 @@ def from_torch(
     ext = MLModelExtension.ext(item, add_if_missing=True)
     ext.apply(mlm_props)
 
-    return ItemMLModelExtension(item)
+    eo_model_asset = cast(
+        EOExtension[Asset],
+        EOExtension.ext(assets["model"], add_if_missing=True),
+    )
+    eo_bands = []
+    for name in bands:
+        band = Band({})
+        band.apply(name=name)
+        eo_bands.append(band)
+    eo_model_asset.apply(bands=eo_bands)
+
+    item_mlm = MLModelExtension.ext(item, add_if_missing=True)
+    item_mlm.apply(mlm_props.model_dump(by_alias=True, exclude_unset=True, exclude_defaults=True))
+    return item_mlm
