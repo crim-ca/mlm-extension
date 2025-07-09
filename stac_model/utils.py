@@ -1,4 +1,4 @@
-from pystac import Item, Link
+from pystac import Asset, Item, Link
 from stac_model.input import InputStructure, ModelInput
 from stac_model.output import MLMClassification, ModelOutput, ModelResult
 from stac_model.schema import ItemMLModelExtension, MLModelExtension, MLModelProperties
@@ -7,26 +7,24 @@ import torch.nn as nn
 from typing import Optional
 
 
-def get_input_channels(model: nn.Module) -> int:
+def get_input_channels(state_dict: dict) -> int:
     """
-    Get input channels from the first Conv2d layer in the model.
+    Get number of input channels from the first convolutional layer's weights.
     """
-    for layer in model.modules():
-        if isinstance(layer, nn.Conv2d):
-            return layer.in_channels
-    return 3  # default fallback
+    for key, tensor in state_dict.items():
+        if "encoder._conv_stem.weight" in key:
+            return tensor.shape[1]
+    raise ValueError("Could not determine input channels from model weights.")
 
 
-def get_output_channels(model: nn.Module) -> int:
+def get_output_channels(state_dict: dict) -> int:
     """
-    Get output channels from the last Linear or Conv2d layer in the model.
+    Get number of output channels from the segmentation head's last conv layer.
     """
-    for layer in reversed(list(model.modules())):
-        if isinstance(layer, nn.Linear):
-            return layer.out_features
-        elif isinstance(layer, nn.Conv2d):
-            return layer.out_channels
-    return 10  # default fallback
+    for key, tensor in reversed(state_dict.items()):
+        if "segmentation_head.0.weight" in key:
+            return tensor.shape[0]
+    raise ValueError("Could not determine output channels from model weights.")
 
 
 def from_torch(
@@ -38,29 +36,27 @@ def from_torch(
     geometry: Optional[dict] = None,
     links: Optional[list[dict]] = None,
     datetime_range: tuple[str, str] = (
-        "1900-01-01T00:00:00Z",
-        "9999-01-01T00:00:00Z",
-    ),  # training data timestamp range par default voir papier
+        "2015-06-23T00:00:00Z",  # Sentinel-2A launch date (first Sentinel-2 data available)
+        "2024-08-27T23:59:59Z",  # Dataset publication date Fields of The World (FTW)
+    ),
 ) -> ItemMLModelExtension:
     total_params = sum(p.numel() for p in model.parameters())
     arch = f"{model.__class__.__module__}.{model.__class__.__name__}"
     task = {"classification"}
 
-    print("model passed:", vars(model))
-    print(f"Modèle: {arch}, total params: {total_params}")
+    # Extra metadata only found in weights of torchgeo models
+    has_meta = weights is not None and hasattr(weights, "meta")
+    state_dict = model.state_dict()
 
-    if weights is not None and hasattr(weights, "meta"):
-        in_chans = weights.meta.get("in_chans")
-        num_classes = weights.meta.get("num_classes")
+    if has_meta:
+        in_chans = weights.meta.get("in_chans", get_input_channels(state_dict))
+        num_classes = weights.meta.get("num_classes", get_output_channels(state_dict))
     else:
-        in_chans = get_input_channels(model)
-        num_classes = get_output_channels(model)
+        in_chans = get_input_channels(state_dict)
+        num_classes = get_output_channels(state_dict)
 
     input_shape = [1, in_chans, 224, 224]
     output_shape = [1, num_classes]
-
-    print(f"Input shape: {input_shape}")
-    print(f"Output shape: {output_shape}")
 
     input_struct = InputStructure(
         shape=input_shape,
@@ -68,12 +64,10 @@ def from_torch(
         data_type="float32",
     )
 
-    if weights is not None and hasattr(weights, "meta") and "bands" in weights.meta:
+    if has_meta and "bands" in weights.meta:
         bands = weights.meta["bands"]
     else:
         bands = [f"band_{i}" for i in range(input_shape[1])]
-
-    print(f"Bands: {bands}")
 
     model_input = ModelInput(
         name="model_input",
@@ -92,7 +86,6 @@ def from_torch(
             for i in range(output_shape[-1])
         ],
     )
-    print("classes", classes)
 
     model_output = ModelOutput(
         name="model_output",
@@ -131,6 +124,56 @@ def from_torch(
         ],
     }
 
+    if has_meta:
+        meta = weights.meta
+        url = weights.url
+    assets = {}
+
+    # Model weights asset
+    assets["model"] = Asset(
+        title=f"{meta.get('model', 'Model')} ({meta.get('encoder', '')}) weights trained on {meta.get('dataset', 'dataset')} dataset",
+        description=(
+            f"A {meta.get('model', 'Model')} segmentation model with {meta.get('encoder', '')} encoder "
+            f"trained on {meta.get('dataset', 'dataset')} imagery with {meta.get('num_classes', '?')}-class labels. "
+            f"Weights are {meta.get('license', 'licensed')}."
+        ),
+        href=url,
+        media_type="application/octet-stream; application=pytorch",
+        roles=[
+            "mlm:model",
+            "mlm:weights",
+            "data",
+        ],
+    )
+
+    # Publication asset
+    publication_url = meta.get("publication")
+    if publication_url:
+        assets["publication"] = Asset(
+            title=f"{meta.get('dataset', 'Dataset')} publication",
+            description=f"Paper describing the {meta.get('dataset', 'dataset')} dataset and model benchmarks.",
+            href=publication_url,
+            media_type="text/html",
+            roles=[
+                "publication",
+                "paper",
+            ],
+        )
+
+    # Source code asset
+    repo_url = meta.get("repo")
+    if repo_url:
+        assets["source_code"] = Asset(
+            title=f"{meta.get('dataset', 'Dataset')} Baselines repository",
+            description=f"GitHub repo with baseline code for {meta.get('dataset', 'dataset')} dataset models.",
+            href=repo_url,
+            media_type="text/html",
+            roles=[
+                "mlm:source_code",
+                "code",
+            ],
+        )
+
     item = Item(
         id=item_id,
         geometry=geometry,
@@ -142,6 +185,7 @@ def from_torch(
             "description": "An Item with Machine Learning Model Extension metadata for a PyTorch model.",
         },
         stac_extensions=[MLModelExtension.get_schema_uri()],
+        assets=assets,
     )
 
     for link in links or []:
